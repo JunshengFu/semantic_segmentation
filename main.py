@@ -8,7 +8,7 @@ import csv
 import time
 
 
-model_path='./model-37epochs/model.ckpt'
+model_path='./model/model.ckpt'
 
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.' \
@@ -46,7 +46,7 @@ def load_vgg(sess, vgg_path):
     vgg_layer7_out = tf.get_default_graph().get_tensor_by_name(vgg_layer7_out_tensor_name)
 
     return image_input, keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out
-tests.test_load_vgg(load_vgg, tf)
+
 
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
@@ -100,7 +100,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
         kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-4), name='fcn_decoder_layer4')
 
     return fcn_decoder_output
-tests.test_layers(layers)
+
 
 
 def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
@@ -123,7 +123,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     train_op = optimizer.minimize(cross_entropy_loss)
 
     return logits, train_op, cross_entropy_loss
-tests.test_optimize(optimize)
+
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
@@ -141,8 +141,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    # TODO: Implement function
-
+    # Create log file
     log_filename = "./training_progress.csv"
     log_fields = ['learning_rate', 'exec_time (s)', 'training_loss']
     log_file = open(log_filename, 'w')
@@ -177,7 +176,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
         log_writer.writerow({'learning_rate': lr, 'exec_time (s)': round(training_time, 2) , 'training_loss': round(training_loss,4)})
         log_file.flush()
 
-tests.test_train_nn(train_nn)
+
 
 
 
@@ -243,7 +242,7 @@ def predict_images(test_data_path, print_speed=False):
         saver.restore(sess, model_path)
         print("Restored the saved Model in file: %s" % model_path)
 
-        # TODO: predict the samples
+        # Predict the samples
         helper.pred_samples(runs_dir, test_data_path, sess, image_shape, logits, keep_prob, input_image, print_speed)
 
 
@@ -253,9 +252,15 @@ if __name__ == '__main__':
     training_flag = False   # True: train the NN; False: predict with trained NN
 
     if training_flag:
-        # train the NN and save the trained model
+        # run unittest before training
+        tests.test_load_vgg(load_vgg, tf)
+        tests.test_layers(layers)
+        tests.test_optimize(optimize)
+        tests.test_train_nn(train_nn)
+
+        # train the NN and save the model
         run()
     else:
         # use the pre-trained model to predict more images
-        test_data_path = '/data/kitti/odometry/dataset/sequences/00/image_2'
-        predict_images(test_data_path, print_speed=False)
+        test_data_path = './data/data_road/testing/image_2'
+        predict_images(test_data_path, print_speed=True)

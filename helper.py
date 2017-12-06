@@ -188,11 +188,12 @@ def pred_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input
     image_outputs = gen_output(
         sess, logits, keep_prob, input_image, data_dir, image_shape)
 
-
+    counter = 0
     for name, image, speed_ in image_outputs:
         scipy.misc.imsave(os.path.join(output_dir, name), image)
         if print_speed is True:
-            print("Processing file: {0}, Speed: {1:.2f} fps".format(name, speed_))
+            counter+=1
+            print("Processing file: {0:05d},\tSpeed: {1:.2f} fps".format(counter, speed_))
 
         # sum_time += laptime
 
