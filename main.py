@@ -249,7 +249,7 @@ def predict_images(test_data_path, print_speed=False):
 
 if __name__ == '__main__':
 
-    training_flag = False   # True: train the NN; False: predict with trained NN
+    training_flag = True   # True: train the NN; False: predict with trained NN
 
     if training_flag:
         # run unittest before training
