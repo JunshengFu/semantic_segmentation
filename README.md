@@ -240,7 +240,7 @@ Some testing examples are shown as follows:
 #### 5.2 Limitations
 
 Based on my test on **4833** testing images. There are two scenarios where
-Currenthe trained model does NOT perform well: (1) turning spot, (2)
+th current model does NOT perform well: (1) turning spot, (2)
 over-exposed area.
 
 The bad performance at the turning spots might be
