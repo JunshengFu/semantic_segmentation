@@ -8,9 +8,12 @@ Convolutional Network (FCN).
 
 FCN-VGG16 is implemented and trained with KITTI dataset for road segmentation.
 
-#### Demo
+### Demo
 
-![demo_gif][demo_gif]
+[![demo_gif][demo_gif]](https://youtu.be/TytKBG0iie4)
+
+(click to see the full video)
+
 
 ---
 
