@@ -24,7 +24,7 @@ FCN-VGG16 is implemented and trained with KITTI dataset for road segmentation.
 * [project_tests.py](project_test.py) includes the unittest
 * [helper.py](yolo_pipeline.py) includes some helper functions
 * [env-gpu-py35.yml](env-gpu-py35.yml) is environmental file with GPU and Python3.5
-* [data](data) folder contains the KITTI road data and the VGG model.
+* [data](data) folder contains the KITTI road data, the VGG model and source images.
 * [model](model) folder is used to save the trained model
 * [runs](runs) folder contains the segmentation examples of the testing data
 
@@ -58,6 +58,21 @@ it automatically for you.
 ```sh
 python main.py
 ```
+
+(4) Use my trained model to predict new images
+
+You can download my trained model [here](https://www.dropbox.com/s/uv1xkd6y4nzxq2n/model.zip?dl=0)
+and save it to the folder [model](model). Also, you need to set the training flag to False
+in the `main.py`:
+
+    training_flag = False
+
+Then run the code by:
+
+```sh
+python main.py
+```
+
 
 #### 1.4. Release History
 
