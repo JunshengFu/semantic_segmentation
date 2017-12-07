@@ -4,9 +4,7 @@
 In the case of the autonomous driving, given an front camera view, the car
 needs to know where is the road. In this project, we trained a neural network
 to label the pixels of a road in images, by using a method named Fully
-Convolutional Network (FCN).
-
-FCN-VGG16 is implemented and trained with KITTI dataset for road segmentation.
+Convolutional Network (FCN). In this project, FCN-VGG16 is implemented and trained with KITTI dataset for road segmentation.
 
 ### Demo
 
