@@ -91,6 +91,7 @@ python main.py
 ### 2 Network Architecture
 
 #### 2.1 Fully Convolutional Networks (FCN) in the Wild
+
 ![][image0]
 
 FCNs can be described as the above example: a pre-trained model, follow by
@@ -99,7 +100,9 @@ can describe it as **encoder** (a pre-trained model + 1-by-1 convolutions)
 and **decoder** (transposed convolutions).
 
 #### 2.2 Fully Convolutional Networks for Semantic Segmentation
+
 ![][image1]
+
 The Semantic Segmentation network provided by this
 [paper](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
 learns to combine coarse, high layer informaiton with fine, low layer
