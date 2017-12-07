@@ -1,9 +1,10 @@
-# **Drivable Road Segmentation**
+# **Road Segmentation**
 
 ### Objective
-In this project, you'll label the pixels of a road in images using a Fully Convolutional Network (FCN).
-
-
+In the case of the autonomous driving, given an front camera view, the car
+needs to know where is the road. In this project, we trained a neural network
+to label the pixels of a road in images, by using a method named Fully
+Convolutional Network (FCN).
 
 #### Demo
 
@@ -11,206 +12,250 @@ In this project, you'll label the pixels of a road in images using a Fully Convo
 
 ---
 
-### Setup
-##### Frameworks and Packages
-Make sure you have the following is installed:
- - [Python 3](https://www.python.org/)
- - [TensorFlow](https://www.tensorflow.org/)
- - [NumPy](http://www.numpy.org/)
- - [SciPy](https://www.scipy.org/)
-##### Dataset
-Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road.php) from [here](http://www.cvlibs.net/download.php?file=data_road.zip).  Extract the dataset in the `data` folder.  This will create the folder `data_road` with all the training a test images.
-
-### Start
-##### Implement
-Implement the code in the `main.py` module indicated by the "TODO" comments.
-The comments indicated with "OPTIONAL" tag are not required to complete.
-##### Run
-Run the following command to run the project:
-```
-python main.py
-```
 
 
+### 1 Code & Files
 
-### Code & Files
-
-#### 1. My project includes the following files
+#### 1.1 My project includes the following files and folders
 
 * [main.py](main.py) is the main code for demos
-* [svm_pipeline.py](svm_pipeline.py) is the car detection pipeline with SVM
-* [yolo_pipeline.py](yolo_pipeline.py) is the car detection pipeline with a deep net [YOLO (You Only Look Once)](https://arxiv.org/pdf/1506.02640.pdf)
-* [visualization.py](visualizations.py) is the function for adding visalization
-
----
-Others are the same as in the repository of [Lane Departure Warning System](https://github.com/JunshengFu/autonomous-driving-lane-departure-warning):
-* [calibration.py](calibration.py) contains the script to calibrate camera and save the calibration results
-* [lane.py](model.h5) contains the lane class
-* [examples](examples) folder contains the sample images and videos
+* [project_tests.py](project_test.py) includes the unittest
+* [helper.py](yolo_pipeline.py) includes some helper functions
+* [env-gpu-py35.yml](env-gpu-py35.yml) is environmental file with GPU and Python3.5
+* [data](data) folder contains the KITTI road data and the VGG model.
+* [model](model) folder is used to save the trained model
+* [runs](runs) folder contains the segmentation examples of the testing data
 
 
-#### 2. Dependencies & my environment
 
-Anaconda is used for managing my [**dependencies**](https://github.com/udacity/CarND-Term1-Starter-Kit).
+#### 1.2 Dependencies & my environment
 
-* OpenCV3, Python3.5, tensorflow, CUDA8
+Miniconda is used for managing my [**dependencies**](env-gpu-py35.yml).
+
+* Python3.5, tensorflow-gpu, CUDA8, Numpy, SciPy
 * OS: Ubuntu 16.04
+* CPU: Intel® Core™ i7-6820HK CPU @ 2.70GHz × 8
+* GPU: GeForce GTX 980M (8G memory)
+* Memory: 32G
 
-#### 3. How to run the code
+#### 1.3 How to run the code
 
-(1) Download weights for YOLO
+(1) Download KITTI data (training and testing)
 
-You can download the weight from [here](https://drive.google.com/open?id=0B5WIzrIVeL0WS3N2VklTVmstelE) and save it to
-the [weights](weights) folder.
+Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road.php)
+from [here](http://www.cvlibs.net/download.php?file=data_road.zip).  Extract the
+dataset in the **data** folder. This will create the folder **data_road** with all
+the training a test images.
 
-(2) If you want to run the demo, you can simply run:
+(2) Load pre-trained VGG
+
+Function ```maybe_download_pretrained_vgg()``` in ```helper.py``` will do
+it automatically for you.
+
+(3) Run the code:
 ```sh
 python main.py
 ```
 
-#### 4. Release History
+#### 1.4. Release History
 
 * 0.1.1
-    * Fix two minor bugs and update the documents
-    * Date 18 April 2017
+    * Updated documents
+    * Date 7 December 2017
 
 * 0.1.0
     * The first proper release
-    * Date 31 March 2017
+    * Date 6 December 2017
+
 
 ---
 
-### **Two approaches: Linear SVM vs Neural Network**
+### 2 Network Architecture
 
-### 1. Linear SVM Approach
-`svm_pipeline.py` contains the code for the svm pipeline.
+#### 2.1 Fully Convolutional Networks (FCN) in the Wild
+![][image0]
 
-**Steps:**
+FCNs can be described as the above example: a pre-trained model, follow by
+1-by-1 convolutions, then followed by transposed convolutions. Also, we
+can describe it as **encoder** (a pre-trained model + 1-by-1 convolutions)
+and **decoder** (transposed convolutions).
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* A color transform is applied to the image and append binned color features, as well as histograms of color, to HOG feature vector.
-* Normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use SVM classifier to search for vehicles in images.
-* Run pipeline on a video stream and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for detected vehicles.
+#### 2.2 Fully Convolutional Networks for Semantic Segmentation
+![][image1]
+The Semantic Segmentation network provided by this
+[paper](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
+learns to combine coarse, high layer informaiton with fine, low layer
+information. The pooling and prediction
+layers are shown as grid that reveal relative spatial coarseness,
+while intermediate layers are shown as vertical lines
 
-[//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[demo_gif]: ./data/demo.gif
+* The encoder
+    * VGG16 model pretrained on ImageNet for classification (see VGG16
+    architecutre below) is used in encoder.
+    * And the fully-connected layers are replaced by 1-by-1 convolutions.
 
-#### 1.1 Extract Histogram of Oriented Gradients (HOG) from training images
-The code for this step is contained in the function named `extract_features` and codes from line 464 to 552 in `svm_pipeline.py`.
- If the SVM classifier exist, load it directly.
+* The decoder
+    * Transposed convolution is used to upsample the input to the
+     original image size.
+    * Two skip connections are used in the model.
 
- Otherwise, I started by reading in all the `vehicle` and `non-vehicle` images, around 8000 images in each category.  These datasets are comprised of
- images taken from the [GTI vehicle image database](http://www.gti.ssr.upm.es/data/Vehicle_database.html) and
- [KITTI vision benchmark suite](http://www.cvlibs.net/datasets/kitti/).
- Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
-
-![alt text][image1]
-
-
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
-
-Here is an example using the `RGB` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
-
-![alt text][image2]
-![alt text][image2-1]
-
-To optimize the HoG extraction, I **extract the HoG feature for the entire image only once**. Then the entire HoG image
-is saved for further processing. (see line 319 to 321 in  `svm_pipeline.py`)
-
-#### 1.2 Final choices of HOG parameters, Spatial Features and Histogram of Color.
-
-I tried various combinations of parameters and choose the final combination as follows
-(see line 16-27 in `svm_pipeline.py`):
-* `YCrCb` color space
-* orient = 9  # HOG orientations
-* pix_per_cell = 8 # HOG pixels per cell
-* cell_per_block = 2 # HOG cells per block, which can handel e.g. shadows
-* hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
-* spatial_size = (32, 32) # Spatial binning dimensions
-* hist_bins = 32    # Number of histogram bins
-* spatial_feat = True # Spatial features on or off
-* hist_feat = True # Histogram features on or off
-* hog_feat = True # HOG features on or off
-
-All the features are **normalized** by line 511 to 513 in `svm_pipeline.py`, which is a critical step. Otherwise, classifier
-may have some bias toward to the features with higher weights.
-#### 1.3. How to train a classifier
-I randomly select 20% of images for testing and others for training, and a linear SVM is used as classifier (see line
-520 to 531 in `svm_pipeline.py`)
-
-#### 1.4 Sliding Window Search
-For this SVM-based approach, I use two scales of the search window (64x64 and 128x128, see line 41) and search only between
-[400, 656] in y axis (see line 32 in `svm_pipeline.py`). I choose 75% overlap for the search windows in each scale (see
-line 314 in `svm_pipeline.py`).
-
-For every window, the SVM classifier is used to predict whether it contains a car nor not. If yes, save this window (see
-line 361 to 366 in `svm_pipeline.py`). In the end, a list of windows contains detected cars are obtianed.
-
-![alt text][image3]
-
-#### 1.5 Create a heat map of detected vehicles
-After obtained a list of windows which may contain cars, a function named `generate_heatmap` (in line 565 in
-`svm_pipeline.py`) is used to generate a heatmap. Then a threshold is used to filter out the false positives.
-
-![heatmap][image4]
-![heatmap][image5]
-
-#### 1.6 Image vs Video implementation
-**For image**, we could directly use the result from the filtered heatmap to create a bounding box of the detected
-vehicle.
-
-**For video**, we could further utilize neighbouring frames to filter out the false positives, as well as to smooth
-the position of bounding box.
-* Accumulate the heatmap for N previous frame.
-* Apply weights to N previous frames: smaller weights for older frames (line 398 to 399 in `svm_pipeline.py`).
-* I then apply threshold and use `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.
-* I then assume each blob corresponded to a vehicle and constructe bounding boxes to cover the area of each blob detected.
+**VGG-16 architecture**
+![vgg16][image2]
 
 
-#### Example of test image
+#### 2.3 Classification & Loss
+we can approach training a FCN just like we would approach training a normal
+classification CNN.
 
-![alt text][image7]
+In the case of a FCN, the goal is to assign each pixel to the appropriate
+class, and cross entropy loss is used as the loss function. We can define
+the loss function in tensorflow as following commands.
+
+```sh
+logits = tf.reshape(input, (-1, num_classes))
+cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits, labels))
+```
+ we now have an end-to-end model for semantic segmentation
+
+### 3 Dataset
+
+#### 3.1 Training data examples from KITTI
+
+**Origin Image**
+
+![][image3]
+
+**Mask image**
+
+![][image4]
+
+In this project, **384** labeled images are used as training data.
+Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road.php)
+from [here](http://www.cvlibs.net/download.php?file=data_road.zip).
+
+
+
+#### 3.2 Testing data
+
+There are **4833** testing images are processed with the trained models.
+4543 frames from are a video and other 290 images from random places in Karlsruhe.
+
+
+### 4 Experiments
+
+Some key parameters in training stage, and the traning loss and training
+time for each epochs are shown in the following table.
+
+    epochs = 37
+    batch_size = 8
+    learning_rate = 0.0001
+
+
+
+| epochs | learning_rate | exec_time (s) | training_loss |
+|:------:|:-------------:|:-------------:|:-------------:|
+| 1 | 0.0001 | 43.16 | 0.7978 |
+| 2 | 0.0001 | 38.52 | 0.5058 |
+| 3 | 0.0001 | 38.55 | 0.2141 |
+| 4 | 0.0001 | 38.56 | 0.1696 |
+| 5 | 0.0001 | 38.39 | 0.1339 |
+| 6 | 0.0001 | 38.44 | 0.1215 |
+| 7 | 0.0001 | 38.68 | 0.1089 |
+| 8 | 0.0001 | 38.3 | 0.0926 |
+| 9 | 0.0001 | 38.14 | 0.0913 |
+| 10 | 0.0001 | 38.08 | 0.0837 |
+| 11 | 0.0001 | 38.34 | 0.0703 |
+| 12 | 0.0001 | 38.02 | 0.0663 |
+| 13 | 0.0001 | 38.21 | 0.0585 |
+| 14 | 0.0001 | 38.33 | 0.0549 |
+| 15 | 0.0001 | 38.12 | 0.0525 |
+| 16 | 0.0001 | 38.31 | 0.0483 |
+| 17 | 0.0001 | 38.4 | 0.0465 |
+| 18 | 0.0001 | 38.42 | 0.0454 |
+| 19 | 0.0001 | 38.27 | 0.0421 |
+| 20 | 0.0001 | 38.73 | 0.0404 |
+| 21 | 0.0001 | 38.03 | 0.039 |
+| 22 | 0.0001 | 38.22 | 0.0387 |
+| 23 | 0.0001 | 37.95 | 0.0368 |
+| 24 | 0.0001 | 38.22 | 0.0352 |
+| 25 | 0.0001 | 38.91 | 0.0335 |
+| 26 | 0.0001 | 38.67 | 0.0324 |
+| 27 | 0.0001 | 38.21 | 0.0316 |
+| 28 | 0.0001 | 38.2 | 0.0302 |
+| 29 | 0.0001 | 38.13 | 0.0291 |
+| 30 | 0.0001 | 38.19 | 0.0313 |
+| 31 | 0.0001 | 38.15 | 0.0303 |
+| 32 | 0.0001 | 38.16 | 0.0299 |
+| 33 | 0.0001 | 38.11 | 0.0273 |
+| 34 | 0.0001 | 38.21 | 0.0265 |
+| 35 | 0.0001 | 38.16 | 0.0254 |
+| 36 | 0.0001 | 38.62 | 0.0244 |
+| 37 | 0.0001 | 37.99 | 0.0234 |
 
 ---
 
+### 5 Discussion
 
-### 2. Neural Network Approach (YOLO)
-`yolo_pipeline.py` contains the code for the yolo pipeline.
+#### 5.1 Good Performance
 
-[YOLO](https://arxiv.org/pdf/1506.02640.pdf) is an object detection pipeline baesd on Neural Network. Contrast to prior work on object detection with classifiers
-to perform detection, YOLO frame object detection as a regression problem to spatially separated bounding boxes and
-associated class probabilities. A single neural network predicts bounding boxes and class probabilities directly from
-full images in one evaluation. Since the whole detection pipeline is a single network, it can be optimized end-to-end
-directly on detection performance.
+With only 384 labeled training images, the FCN-VGG16 performs well to find
+where is the road in the testing data, and the testing speed is about 6
+fps in my laptop. The model performs very well on either highway or urban driving.
+Some testing examples are shown as follows:
 
-![alt text][image_yolo2]
+![][s1]
 
-Steps to use the YOLO for detection:
-* resize input image to 448x448
-* run a single convolutional network on the image
-* threshold the resulting detections by the model’s confidence
+![][s2]
 
-![alt text][image_yolo1]
+![][s3]
 
-`yolo_pipeline.py` is modified and integrated based on this [tensorflow implementation of YOLO](https://github.com/gliese581gg/YOLO_tensorflow).
-Since the "car" is known to YOLO, I use the precomputed weights directly and apply to the entire input frame.
+![][s4]
 
-#### Example of test image
-![alt text][image8]
+![][s5]
 
----
 
-### Discussion
-For the SVM based approach, the accuray is good, but the speed (2 fps) is an problem due to the fact of sliding window approach
-is time consuming! We could use image downsampling, multi-threads, or GPU processing to improve the speed. But, there are probably
-a lot engineering work need to be done to make it running real-time. Also, in this application, I limit the vertical searching
-range to control the number of searching windows, as well as avoid some false positives (e.g. cars on the tree).
+#### 5.2 Limitations
 
-For YOLO based approach, it achieves real-time and the accuracy are quite satisfactory. Only in some cases, it may failure to
- detect the small car thumbnail in distance. My intuition is that the original input image is in resolution of 1280x720, and it needs to be downscaled
- to 448x448, so the car in distance will be tiny and probably quite distorted in the downscaled image (448x448). In order to
- correctly identify the car in distance, we might need to either crop the image instead of directly downscaling it, or retrain
- the network.
+Based on my test on **4833** testing images. There are two scenarios where
+Currenthe trained model does NOT perform well: (1) turning spot, (2)
+over-exposed area.
+
+The bad performance at the turning spots might be
+caused by the fact of lacking training examples that from turning spots,
+because almost all the training images are taken when the car was straight
+driving straight or almost straight. We might be able to improve the
+performance by adding more training data that are taken at the turning spots.
+As for the over-exposed area, it is more challenged.  One possible
+approach is to use white-balance techniques or image restoration methods
+to get the correct image. The other possible approach is to add more
+training data with over-exposed scenarios, and let the network to learn
+how to segment the road even under the over-expose scenarios.
+
+**Turning spot**
+
+![][l2]
+
+
+**Over-exposed area**
+
+![][l3]
+
+
+
+
+[//]: # (Image/video References)
+[image0]: ./data/source/fcn_general.jpg
+[image1]: ./data/source/fcn.jpg
+[image2]: ./data/source/vgg16.png
+[image3]: ./data/source/origin.png
+[image4]: ./data/source/mask.png
+[s1]: ./data/source/sample1.png
+[s2]: ./data/source/sample2.png
+[s3]: ./data/source/sample3.png
+[s4]: ./data/source/sample4.png
+[s5]: ./data/source/sample5.png
+[l1]: ./data/source/fail1.png
+[l2]: ./data/source/fail2.png
+[l3]: ./data/source/fail3.png
+[l4]: ./data/source/fail4.png
+[demo_gif]: ./data/source/demo.gif
