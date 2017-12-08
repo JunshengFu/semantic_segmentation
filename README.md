@@ -245,10 +245,10 @@ over-exposed area.
 
 The bad performance at the turning spots might be
 caused by the fact of lacking training examples that from turning spots,
-because almost all the training images are taken when the car was straight
-driving straight or almost straight. We might be able to improve the
+because almost all the training images are taken when the car was
+driving straight or turning slightly. We might be able to improve the
 performance by adding more training data that are taken at the turning spots.
-As for the over-exposed area, it is more challenged.  One possible
+As for the over-exposed area, it is more challenging.  One possible
 approach is to use white-balance techniques or image restoration methods
 to get the correct image. The other possible approach is to add more
 training data with over-exposed scenarios, and let the network to learn
