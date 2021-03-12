@@ -105,7 +105,7 @@ and **decoder** (transposed convolutions).
 ![][image1]
 
 The Semantic Segmentation network provided by this
-[paper](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
+[paper](https://arxiv.org/abs/1411.4038)
 learns to combine coarse, high layer informaiton with fine, low layer
 information. The pooling and prediction
 layers are shown as grid that reveal relative spatial coarseness,
